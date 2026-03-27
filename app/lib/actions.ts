@@ -33,11 +33,9 @@ export async function createInvoice(formData: FormData) {
     ({ customerId, amount, status } = CreateInvoice.parse(raw));
   } catch (err) {
     console.error("Validation error creating invoice:", err);
-    // Return an object so client can handle failure; don't redirect
-    return {
-      message:
-        "Invalid form submission. Please check all fields and try again.",
-    };
+    throw new Error(
+      "Invalid form submission. Please check all fields and try again.",
+    );
   }
 
   const amountInCents = amount * 100;
@@ -50,7 +48,7 @@ export async function createInvoice(formData: FormData) {
     `;
   } catch (error) {
     console.error("Database Error creating invoice:", error);
-    return { message: "Database Error: Failed to Create Invoice." };
+    throw new Error("Database Error: Failed to Create Invoice.");
   }
 
   revalidatePath("/dashboard/invoices");
@@ -70,10 +68,9 @@ export async function updateInvoice(id: string, formData: FormData) {
     ({ customerId, amount, status } = UpdateInvoice.parse(raw));
   } catch (err) {
     console.error("Validation error updating invoice:", err);
-    return {
-      message:
-        "Invalid form submission. Please check all fields and try again.",
-    };
+    throw new Error(
+      "Invalid form submission. Please check all fields and try again.",
+    );
   }
 
   const amountInCents = amount * 100;
@@ -86,20 +83,20 @@ export async function updateInvoice(id: string, formData: FormData) {
     `;
   } catch (error) {
     console.error("Database Error updating invoice:", error);
-    return { message: "Database Error: Failed to Update Invoice." };
+    throw new Error("Database Error: Failed to Update Invoice.");
   }
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
-export async function deleteInvoice(id: string) {
+export async function deleteInvoice(id: string, _formData?: FormData) {
   try {
     await sql`
       DELETE FROM invoices WHERE id = ${id}
     `;
   } catch (error) {
     console.error("Database Error deleting invoice:", error);
-    return { message: "Database Error: Failed to Delete Invoice." };
+    throw new Error("Database Error: Failed to Delete Invoice.");
   }
 
   revalidatePath("/dashboard/invoices");
